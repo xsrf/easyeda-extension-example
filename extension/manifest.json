@@ -1,7 +1,7 @@
 {
 	"name": "Expose API Example",
 	"description": "Exposes api() to window.api() so it can be invoked from browser Devtools! Also Showcase how Menus are created",
-	"version": "1.0",
+	"version": "1.1",
 	"icons": {
 		"default": "icon.svg"
 	},
