@@ -2,7 +2,7 @@ EasyEDA Extension Example
 =========================
 Download this code, open [EasyEDA](https://easyeda.com/editor), go to "Advanced" > "Extensions" > "Extensions Settings ..." > "Load Extension..." > "Select Files ..." > Select all three files from the "extension" directory > "Load Extension".
 
-The extension should now be laoded like this:
+The extension should now be loaded like this:
 
 <img src="screenshot.png">
 
