@@ -100,7 +100,7 @@ api('createToolbarButton', {
 		},
 		{
 			"text":"Button 2 Label", 
-			"cmd":"extension-exposeapi-setting"
+			"cmd":"extension-exposeapi-setting",
 		},
 		{
 			"text":"Halt Debugger", 
@@ -109,6 +109,73 @@ api('createToolbarButton', {
 		{
 			"text":"Log selected Shape(s) to Console", 
 			"cmd":"extension-exposeapi-logselected"
-		}
+		},
+		{
+			// horizontal bar
+		},
+		{
+			text: 'More menu stuff',
+			submenu: [
+
+				{
+					text: 'Checkbox 1',
+					group: 'checkbox:groupIdNotSure',
+					onclick: (e)=>{console.log('onClick',e)},
+				},
+				{
+					text: 'Checkbox 2',
+					group: 'checkbox:groupIdNotSure',
+					checked: true,
+					onclick: (e)=>{console.log('onClick',e)},
+				},
+				{
+					text: 'Radiogroup 1 Option 1',
+					group: 'radio:grp1',
+					onclick: (e)=>{console.log('onClick',e)},
+				},
+				{
+					text: 'Radiogroup 1 Option 2',
+					group: 'radio:grp1',
+					checked: true,
+					onclick: (e)=>{console.log('onClick',e)},
+				},
+				{
+					text: 'Radiogroup 1 Option 3',
+					group: 'radio:grp1',
+					disabled: true
+				},
+				{},
+				{
+					text: 'Disabled Item with Hotke',
+					hotkey: 'Key+Key',
+					disabled: true
+				},
+				{
+					text: 'Data-Icon and href',
+					href: 'https://www.google.com/',
+					icon: 'data:image/gif;base64,R0lGODlhEAAQAMQAAORHHOVSKudfOulrSOp3WOyDZu6QdvCchPGolfO0o/XBs/fNwfjZ0frl3/zy7////wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH5BAkAABAALAAAAAAQABAAAAVVICSOZGlCQAosJ6mu7fiyZeKqNKToQGDsM8hBADgUXoGAiqhSvp5QAnQKGIgUhwFUYLCVDFCrKUE1lBavAViFIDlTImbKC5Gm2hB0SlBCBMQiB0UjIQA7'
+				},
+				{
+					text: 'Only in PCB',
+					fordoctype: 'pcb'
+				},
+				{
+					text: 'With Handler/onclick',
+					id: 'myTestId',
+					onclick: (e)=>{console.log('onClick',e,arguments)},
+					handler: (e)=>{console.log('handler',e,arguments)},
+				},
+				{
+					text: 'Submenu',
+					submenu:[
+						{
+							text: "Text"
+						}
+					]
+				},
+		
+
+			]
+		},
 	]
 });
