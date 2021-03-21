@@ -1,9 +1,19 @@
 /*
-	This script is executed by EasyEDA in a separate scope.
-	All you "global" variables will be unavailable from outside or other scripts.
+	This script is executed by EasyEDA in a separate scope via eval().
+	"this" is set to window. All your global variables are attached to window.
 	You can have multiple js files in an extension, but they have different scopes.
 	Inside this scope, you have access to "api".
 */
+
+// These will be globally available via window object (don't use):
+testVariableGlobal = 42;
+eval('testVariableEvalGlobal = 42');
+
+// These will be only available within this script:
+var testVariableVar = 42; 
+let testVariableLet = 42;
+const testVariableConst = 42;
+eval('var testVariableEvalVar = 42');
 
 /*
 	Expose "api" to the global window object. This way you can use api() also from
@@ -18,7 +28,7 @@ console.log("You can now use api() in the Browser console!");
 	Every Extension has a unique extension ID. The extension ID is extracted from this
 	JavaScript File using regular expressions.
 	The expression is looking for extension-{extensionid}-{whatever}.
-	So, this is how you set it to "exposeapi":
+	So, this is how you set it to "exposeapi" within this comment:
 
 	extension-exposeapi-ilovedocumentation
 */
@@ -29,14 +39,20 @@ console.log("You can now use api() in the Browser console!");
 	So, one "hack" would be to create an UI Dialog. It will get created with the extension ID as part of
 	its own ID in the DOM. You can then read this back.
 */
-extensionId = api('createDialog',{title:'getId'})[0].id.split('-')[2]; // id = dlg-extension-exposeapi-126594
+var extensionId = api('createDialog',{title:'getId'})[0].id.split('-')[2]; // id = dlg-extension-exposeapi-126594
+
+/*
+	A cleaner way is to set the extension ID and also declare it as a variable in one step:
+*/
+var extensionId = 'extension-exposeapi-ilovedocumentation'.split('-')[1];
+
 
 /*
 	The manifest.json has some metadata about your extension. You can access it, alongside
 	other data, via easyeda.extension.instances.{extensionid}.manifest
 */
-version = easyeda.extension.instances.exposeapi.manifest.version;
-manifest = easyeda.extension.instances[extensionId].manifest;
+const instance = easyeda.extension.instances[extensionId];
+const manifest = instance.manifest;
 
 /*
 	createCommand Command router is used to register extension specific commands.
@@ -179,3 +195,96 @@ api('createToolbarButton', {
 		},
 	]
 });
+
+
+/*
+	Load additional modules/libraries/scripts from the extension
+*/
+
+const loadExtensionModule = async (filename) => {
+	try {
+		const url = api('getRes',{file: filename});
+		if(!url) throw 'blob-url undefined';
+		return await import(url);	
+	} catch (error) {
+		const msg = `Failed to load module '${filename}' of extension '${extensionId}'. Maybe you didn't select all files for install?! Please reinstall! ${error}`;
+		$.messager.error(msg);
+		throw msg;
+	}	
+}
+
+
+const loadExtensionScript = async (filename) => {
+	try {
+		const response = await fetch(api('getRes',{file: filename}));
+		const body = await response.text();
+		return eval(body);
+	} catch (error) {
+		const msg = `Failed to load script '${filename}' of extension '${extensionId}'. Maybe you didn't select all files for install?! Please reinstall! ${error}`;
+		$.messager.error(msg);
+		throw msg;
+	}	
+}
+
+const getExtensionScript = async (filename) => {
+	try {
+		const url = api('getRes',{file: filename});
+		if(!url) throw 'blob-url undefined';
+		const response = await fetch(url);
+		const body = await response.text();
+		return body;
+	} catch (error) {
+		const msg = `Failed to load script '${filename}' of extension '${extensionId}'. Maybe you didn't select all files for install?! Please reinstall! ${error}`;
+		$.messager.error(msg);
+		throw msg;
+	}	
+}
+
+var myModule;
+
+(async ()=>{
+	myModule = await loadExtensionModule('module.js');
+	myModule.myModuleFunction();
+	eval(await getExtensionScript('lib.js'));
+	myLibraryFunction();
+	myLibraryFunctionVar();
+})();
+
+
+/*
+	Self-Contained Update-Notification.
+	Relies on "instance" pointing to easyeda.extension.instances[extensionId]
+	"updatebaseurl" being set in the manifest
+	"homepage" being set in the manifest
+*/
+(async ()=>{
+	try {
+		var skipVersion = localStorage.getItem(`extension-${instance.id}-update-skip`) || instance.manifest.version;
+		var cmds = {};
+		cmds[`extension-${instance.id}-update-page`] = ()=>{ window.open(instance.manifest.homepage,'_blank') };
+		cmds[`extension-${instance.id}-update-skip`] = ()=>{ localStorage.setItem(`extension-${instance.id}-update-skip`,skipVersion) };
+		api('createCommand', cmds);
+		var response = await fetch(instance.manifest.updatebaseurl + 'manifest.json');
+		var onlineManifest = await response.json();
+		if(onlineManifest.version != instance.manifest.version && onlineManifest.version != skipVersion) {
+			skipVersion = onlineManifest.version;
+			$.messager.show({
+				title: `Update Available for <b>${instance.manifest.name}</b>`,
+				msg: `<table>
+						<tr><td>Installed:</td><td>${instance.manifest.name} ${instance.manifest.version}</td></tr>
+						<tr><td>Available:</td><td>${onlineManifest.name} ${onlineManifest.version}</td></tr>
+					</table>
+					<div class="dialog-button">
+						<a tabindex="0" cmd="extension-${instance.id}-update-page;dialog-close" class="l-btn"><span class="l-btn-left"><span class="l-btn-text i18n">Download</span></span></a>
+						<a tabindex="0" cmd="extension-${instance.id}-update-skip;dialog-close" class="l-btn"><span class="l-btn-left"><span class="l-btn-text i18n">Skip Version</span></span></a>
+					</div>
+					`,
+				height: 'auto',
+				timeout: 30e3,
+				showType: "slide"
+			});
+		}			
+	} catch (error) {
+		console.log('Update check failed: '+error);
+	}
+})();
