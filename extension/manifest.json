@@ -1,11 +1,11 @@
 {
 	"name": "Expose API Example",
 	"description": "Exposes api() to window.api() so it can be invoked from browser Devtools! Also Showcase how Menus are created",
-	"version": "1.2",
+	"version": "1.3",
 	"homepage": "https://github.com/xsrf/easyeda-extension-example",
 	"updatebaseurl": "https://raw.githubusercontent.com/xsrf/easyeda-extension-example/autoupdate/extension/",
 	"icons": {
 		"default": "icon.svg"
 	},
-	"scripts": [ "main.js" ]
+	"scripts": [ "easyeda-helper.js", "main.js" ]
 }
