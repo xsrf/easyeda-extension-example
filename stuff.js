@@ -456,6 +456,20 @@ api('createShape',{
 
 
 
+shape = api('getShape',{id: api('getSelectedIds')});
+if(shape && shape.pointArr) { 
+	api('createShape',{
+		shapeType:'SOLIDREGION',
+		'jsonCache': {
+			layerid: shape.layerid,
+			type: 'solid',
+			pathStr: 'M ' + shape.pointArr.map(p => `${p.x} ${p.y}` ).join(' L ') + ' Z'
+		}
+	});
+} else {
+	$.messager.error("No points from selected shape!");
+}
+
 document.querySelector('#root').addEventListener('mousemove',(e)=>{console.log(e); if(e.isTrusted) { e.stopImmediatePropagation(); f = new Event('mousemove', e); x=e.clone(); delete x.isTrusted; console.log(x); Object.assign(f,x); e.target.dispatchEvent(f);} },{capture: true});
 
 document.querySelector('#root').addEventListener('mousemove',(e)=>{console.log(e); if(e.isTrusted) { e.stopImmediatePropagation(); f = new MouseEvent('mousemove', e); f.x = 1200-f.x; f.clientX = f.x; f.movementX*=-1; console.log(f); e.target.dispatchEvent(f);} },{capture: true});
